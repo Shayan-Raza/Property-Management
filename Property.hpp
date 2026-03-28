@@ -1,52 +1,86 @@
 #pragma once
 #include <iostream>
-#include <string>
+#include "CustomArray.hpp"
+#include "TicketPriorityQueue.hpp"
+#include "User.hpp"
+#include "Property.hpp"
 using namespace std;
 
-class Landlord;
-class Tenant;
-
-class Property
+class Landlord : public User
 {
-protected:
-    int propertyID;
-    string address;
-    char propertyType;
-    double baseRent;
-    double arrears;
-    int propertyCount;
-    
-    class Landlord *owner;
-    class Tenant *occupant;
+private:
+    double walletBalance;
+    CustomArray<Property *> portfolio;
+    TicketPriorityQueue serviceDesk;
 
 public:
-    Property(){}
-    Property(int propertyID, string address, char propertyType, double baseRent) : propertyID(this->propertyID), address(this->address), propertyType(this->propertyType), baseRent(this->baseRent)
+    Landlord(string username, string password)
+        : User(username, password, "Landlord"), walletBalance(0.0) {}
+
+    void acquireProperty(Property *p)
     {
-        if (this->propertyType != 'R' || this->propertyType != 'C' || this->propertyID <= 0)
-        {
-            throw "Invalid Type";
-        }
+        portfolio.add(p);
+        p->setOwner(this);
     }
 
-    virtual ~Property() = default;
+    void receiveRent(double amount)
+    {
+        walletBalance += amount;
+    }
 
-    virtual double calculateTax() const = 0;
+    void receiveTicket(Ticket t)
+    {
+        serviceDesk.enqueue(t);
+    }
 
-    int getPropertyID() const { return propertyID; }
-    int getPropertyCount() const { return propertyCount; }
-    string getAddress() const { return address; }
-    char getPropertyType() const { return propertyType; }
-    double getBaseRent() const { return baseRent; }
-    double getArrears() const { return arrears; }
+    void processTopTicket()
+    {
+        if (serviceDesk.isEmpty())
+        {
+            cout << "No pending tickets.\n";
+            return;
+        }
+        Ticket t = serviceDesk.dequeue();
+        cout << "=========================================\n";
+        cout << "  Processing Ticket #" << t.ticketID << "\n";
+        cout << "  Property ID : " << t.targetPropertyID << "\n";
+        cout << "  Issue       : " << t.description << "\n";
+        cout << "  Urgency     : " << t.urgencyLevel << "\n";
+        cout << "  Status      : RESOLVED\n";
+        cout << "=========================================\n";
+    }
 
-    Landlord *getOwner() const { return owner; }
-    Tenant *getOccupant() const { return occupant; }
+    void showDashboard() const override
+    {
+        cout << "\n========== LANDLORD DASHBOARD ==========\n";
+        cout << "  Owner   : " << username << "\n";
+        cout << "  Wallet  : PKR " << walletBalance << "\n";
+        cout << "-----------------------------------------\n";
 
-    void setOwner(Landlord *l){owner = l;}
-    void setOccupant(Tenant *t){occupant = t;}
-    void clearArrears(double amount){arrears -= amount;}
-    void addArrears(double amount){arrears += amount;}
-    virtual int calculateProperties(){return 0;}
-    virtual void displayProperties(){}
+        double totalExpected = 0;
+        double totalArrears = 0;
+
+        for (int i = 0; i < portfolio.size(); i++)
+        {
+            Property *p = portfolio.get(i);
+            cout << "  #" << p->getID()
+                 << " | " << p->getAddress()
+                 << " | Rent: PKR " << p->getBaseRent()
+                 << " | Arrears: PKR " << p->getArrears()
+                 << " | Tax: PKR " << p->calculateTax()
+                 << (p->getOccupant() == nullptr ? " | VACANT" : " | OCCUPIED")
+                 << "\n";
+            totalExpected += p->getBaseRent();
+            totalArrears += p->getArrears();
+        }
+
+        cout << "-----------------------------------------\n";
+        cout << "  Total Expected Rent : PKR " << totalExpected << "\n";
+        cout << "  Total Arrears       : PKR " << totalArrears << "\n";
+        cout << "  Pending Tickets     : " << serviceDesk.size() << "\n";
+        cout << "=========================================\n\n";
+    }
+
+    double getWallet() const { return walletBalance; }
+    int portfolioSize() const { return portfolio.size(); }
 };
