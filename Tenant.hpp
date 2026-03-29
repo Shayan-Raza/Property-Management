@@ -1,9 +1,9 @@
 #pragma once
 #include <iostream>
-#include "CustomArray.hpp"
 #include "User.hpp"
-#include "Landlord.hpp"
 #include "Property.hpp"
+#include "Landlord.hpp"
+#include "CustomArray.hpp"
 #include "Ticket.hpp"
 #include "Exceptions.hpp"
 #include "LeaseRecord.hpp"
@@ -26,18 +26,6 @@ public:
         bankBalance += amount;
     }
 
-    void refreshLeases()
-    {
-        CustomArray<LeaseRecord> updated;
-        for (int i = 0; i < leases.size(); i++)
-        {
-            LeaseRecord record = leases.get(i);
-            record.resetForNewMonth();
-            updated.add(record);
-        }
-        leases = updated;
-    }
-    
     void signLease(Property *p)
     {
         LeaseRecord record(p);
@@ -47,8 +35,6 @@ public:
         cout << "[Lease] " << username
              << " signed lease for Property #" << p->getID()
              << " at " << p->getAddress() << "\n";
-        cout << "        Rent due on day " << record.dueDayOfMonth()
-             << " of each month.\n";
     }
 
     void payRent(int propID, double amount)
@@ -61,40 +47,29 @@ public:
             if (p->getID() != propID)
                 continue;
 
-            if (!record.isPaymentDue())
+            if (record.isFullyPaid())
             {
-                int days = record.daysUntilDue();
                 cout << "[Blocked] Rent for Property #" << propID
-                     << " is not due yet.\n";
-                cout << "          Payment opens in "
-                     << days << " day(s) on day "
-                     << record.dueDayOfMonth() << " of the month.\n";
+                     << " is already fully paid.\n";
+                cout << "          No further payment accepted until next session.\n";
                 return;
             }
 
-            if (record.paidThisMonth)
+            if (amount > record.remainingAmount())
             {
-                cout << "[Blocked] You have already paid rent for Property #"
-                     << propID << " this month.\n";
+                cout << "[Blocked] Amount exceeds remaining rent.\n";
+                cout << "          Remaining rent for Property #" << propID
+                     << " is PKR " << record.remainingAmount() << ".\n";
                 return;
             }
 
             if (amount > bankBalance)
                 throw InsufficientFundsException();
 
-            if (amount > p->getBaseRent())
-            {
-                cout << "[Blocked] You cannot pay more than the monthly rent.\n";
-                cout << "          Monthly rent for Property #"
-                     << propID << " is PKR " << p->getBaseRent() << ".\n";
-                return;
-            }
-
             bankBalance -= amount;
+            record.amountPaidThisMonth += amount;
             p->clearArrears(amount);
             p->getOwner()->receiveRent(amount);
-
-            record.markPaid();
 
             CustomArray<LeaseRecord> updated;
             for (int j = 0; j < leases.size(); j++)
@@ -106,10 +81,24 @@ public:
             }
             leases = updated;
 
-            cout << "[Payment] " << username
-                 << " paid PKR " << amount
-                 << " for Property #" << propID
-                 << " | Balance: PKR " << bankBalance << "\n";
+            if (record.isFullyPaid())
+            {
+                cout << "[Payment] " << username
+                     << " paid PKR " << amount
+                     << " for Property #" << propID
+                     << " | Balance: PKR " << bankBalance << "\n";
+                cout << "[Done] Rent fully paid for Property #"
+                     << propID << ". No more payments accepted this session.\n";
+            }
+            else
+            {
+                cout << "[Payment] " << username
+                     << " paid PKR " << amount
+                     << " for Property #" << propID
+                     << " | Balance: PKR " << bankBalance
+                     << " | Remaining rent: PKR "
+                     << record.remainingAmount() << "\n";
+            }
             return;
         }
         throw PropertyNotFoundException();
@@ -142,18 +131,26 @@ public:
         {
             LeaseRecord record = leases.get(i);
             Property *p = record.property;
-            string payStatus = record.paidThisMonth
-                                   ? "PAID this month"
-                                   : (record.isPaymentDue()
-                                          ? "DUE NOW"
-                                          : "Due in " + to_string(record.daysUntilDue()) + " day(s)");
+
+            string status;
+            if (record.isFullyPaid())
+            {
+                status = "FULLY PAID";
+            }
+            else if (record.amountPaidThisMonth > 0)
+            {
+                status = "PARTIALLY PAID — PKR " + std::to_string((int)record.amountPaidThisMonth) + " paid, PKR " + std::to_string((int)record.remainingAmount()) + " remaining";
+            }
+            else
+            {
+                status = "UNPAID";
+            }
+
             cout << "  #" << p->getID()
                  << " | " << p->getAddress()
                  << " | Rent: PKR " << p->getBaseRent()
                  << " | Arrears: PKR " << p->getArrears()
-                 << " | Due Day: " << record.dueDayOfMonth()
-                 << " | Status: " << payStatus
-                 << "\n";
+                 << " | " << status << "\n";
         }
         cout << "=========================================\n\n";
     }
