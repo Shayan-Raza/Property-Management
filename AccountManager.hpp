@@ -7,7 +7,6 @@
 #include "Tenant.hpp"
 #include "PropertyTypes.hpp"
 #include "Exceptions.hpp"
-#include "SystemClock.hpp"
 using namespace std;
 
 class AccountManager
@@ -121,16 +120,6 @@ private:
         }
     }
 
-    void refreshAllLeases()
-    {
-        for (int i = 0; i < accounts.size(); i++)
-        {
-            Tenant *t = dynamic_cast<Tenant *>(accounts.get(i));
-            if (t != nullptr)
-                t->refreshLeases();
-        }
-    }
-
     bool usernameExists(string username)
     {
         for (int i = 0; i < accounts.size(); i++)
@@ -199,60 +188,6 @@ private:
         return nullptr;
     }
 
-    void clockMenu()
-    {
-        while (true)
-        {
-            cout << "\n==============================\n";
-            cout << "  CLOCK / DATE SIMULATION\n";
-            cout << "==============================\n";
-            SystemClock::printCurrentDate();
-            cout << "1. Enable simulation mode\n";
-            cout << "2. Set specific date\n";
-            cout << "3. Advance by days\n";
-            cout << "4. Advance by months\n";
-            cout << "5. Disable simulation (use real date)\n";
-            cout << "6. Back to main menu\n";
-
-            int action = safeReadIntInRange("Choice: ", 1, 6);
-
-            if (action == 1)
-            {
-                SystemClock::enableSimulation();
-                refreshAllLeases();
-            }
-            else if (action == 2)
-            {
-                int day = safeReadIntInRange("Enter day (1-31): ", 1, 31);
-                int month = safeReadIntInRange("Enter month (1-12): ", 1, 12);
-                int year = safeReadInt("Enter year (e.g. 2025): ");
-                SystemClock::setDate(day, month, year);
-                refreshAllLeases();
-            }
-            else if (action == 3)
-            {
-                int days = safeReadIntInRange("Advance by how many days? (1-365): ", 1, 365);
-                SystemClock::advanceDays(days);
-                refreshAllLeases();
-            }
-            else if (action == 4)
-            {
-                int months = safeReadIntInRange("Advance by how many months? (1-24): ", 1, 24);
-                SystemClock::advanceMonths(months);
-                refreshAllLeases();
-            }
-            else if (action == 5)
-            {
-                SystemClock::disableSimulation();
-                refreshAllLeases();
-            }
-            else if (action == 6)
-            {
-                break;
-            }
-        }
-    }
-
     void landlordMenu(Landlord *l)
     {
         while (true)
@@ -260,7 +195,6 @@ private:
             cout << "\n==============================\n";
             cout << "  LANDLORD MENU [" << l->getUsername() << "]\n";
             cout << "==============================\n";
-            SystemClock::printCurrentDate();
             cout << "1. Show My Dashboard\n";
             cout << "2. Add New Property\n";
             cout << "3. View All Properties on Market\n";
@@ -328,7 +262,6 @@ private:
             cout << "\n==============================\n";
             cout << "  TENANT MENU [" << t->getUsername() << "]\n";
             cout << "==============================\n";
-            SystemClock::printCurrentDate();
             cout << "1. Show My Dashboard\n";
             cout << "2. Browse Available Properties\n";
             cout << "3. Rent a Property\n";
@@ -502,7 +435,8 @@ public:
             return;
         }
 
-        cout << "Login successful! Welcome back, " << found->getUsername() << ".\n";
+        cout << "Login successful! Welcome back, "
+             << found->getUsername() << ".\n";
 
         if (found->getRole() == "Landlord")
             landlordMenu(dynamic_cast<Landlord *>(found));
@@ -525,10 +459,5 @@ public:
                  << u->getUsername()
                  << " [" << u->getRole() << "]\n";
         }
-    }
-
-    void runClockMenu()
-    {
-        clockMenu();
     }
 };
