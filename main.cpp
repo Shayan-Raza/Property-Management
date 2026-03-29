@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 #include "AccountManager.hpp"
 using namespace std;
 
@@ -18,19 +19,18 @@ int main()
         cout << "1. Create Account\n";
         cout << "2. Login\n";
         cout << "3. List All Accounts\n";
-        cout << "4. Clock / Date Settings\n";
-        cout << "5. Exit\n";
+        cout << "4. Exit\n";
         cout << "Choice: ";
         cin >> choice;
 
         if (cin.fail())
         {
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Invalid input.\n";
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "Invalid input. Please enter a number.\n";
             continue;
         }
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         if (choice == 1)
             manager.createAccount();
@@ -39,8 +39,6 @@ int main()
         else if (choice == 3)
             manager.listAccounts();
         else if (choice == 4)
-            manager.runClockMenu();
-        else if (choice == 5)
         {
             cout << "Goodbye.\n";
             break;
