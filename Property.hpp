@@ -21,13 +21,7 @@ protected:
 
 public:
     Property(){}
-    Property(int propertyID, string address, char propertyType, double baseRent): propertyID(propertyID),address(address),propertyType(propertyType),baseRent(baseRent),arrears(0.0),owner(nullptr),occupant(nullptr)
-    {
-        if ((propertyType != 'R' && propertyType != 'C') || propertyID <= 0)
-        {
-            throw invalid_argument("Invalid property type or ID.");
-        }
-    }
+    Property(int propertyID, string address, double baseRent): propertyID(propertyID),address(address),baseRent(baseRent),arrears(0.0),owner(nullptr),occupant(nullptr){}
 
     virtual ~Property() = default;
 

@@ -63,7 +63,7 @@ void TC03()
 void TC04()
 {
     Landlord l("alice", "pass123");
-    ResidentialUnit *r = new ResidentialUnit(101, "12 Rose Street", 25000.0);
+    ResidentialUnit *r = new ResidentialUnit(101, "12 Rose Street",25000.0);
     l.acquireProperty(r);
 
     bool ok = (r->getOwner()     == &l          &&
@@ -87,7 +87,6 @@ void TC05()
                l.portfolioSize() == 1);
 
     printResult("TC-05", "Add Commercial Property — 15% tax", ok);
-    delete c;
 }
 
 // ============================================================
@@ -107,7 +106,6 @@ void TC06()
                r->getArrears()  == 25000.0);
 
     printResult("TC-06", "Tenant Signs Lease — Property Occupied", ok);
-    delete r;
 }
 
 // ============================================================
@@ -130,7 +128,6 @@ void TC07()
                r->getArrears()    == 0.0);
 
     printResult("TC-07", "Pay Rent — Full Payment, Arrears Cleared", ok);
-    delete r;
 }
 
 // ============================================================
@@ -153,7 +150,6 @@ void TC08()
                r->getArrears()    == 15000.0);
 
     printResult("TC-08", "Pay Rent — Partial Payment", ok);
-    delete r;
 }
 
 // ============================================================
@@ -185,7 +181,6 @@ void TC09()
                l.getWallet()      == 0.0);
 
     printResult("TC-09", "Pay Rent — InsufficientFundsException", ok);
-    delete r;
 }
 
 // ============================================================
@@ -227,7 +222,6 @@ void TC11()
     bool ok = (l.serviceDeskSize() == 1);  // one ticket in landlord's queue
 
     printResult("TC-11", "Raise Ticket — Routed to Landlord Queue", ok);
-    delete r;
 }
 
 // ============================================================
@@ -252,7 +246,6 @@ void TC12()
     bool ok = (top.urgencyLevel == 9);
 
     printResult("TC-12", "Ticket Priority — Highest Urgency First", ok);
-    delete r;
 }
 
 // ============================================================
@@ -300,8 +293,6 @@ void TC14()
     bool ok = (l.getWallet() == 55000.0);
 
     printResult("TC-14", "Landlord Wallet — Accumulates from Multiple Tenants", ok);
-    delete r1;
-    delete r2;
 }
 
 // ============================================================
@@ -328,7 +319,6 @@ int main()
     cout << "\n=========================================\n";
     cout << "  MIRAC Estate OS — Running Test Cases\n";
     cout << "=========================================\n\n";
-
     TC01();
     TC02();
     TC03();
