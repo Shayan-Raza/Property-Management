@@ -33,13 +33,14 @@ public:
         serviceDesk.enqueue(t);
     }
 
-    void processTopTicket()
+    Ticket processTopTicket()
     {
         if (serviceDesk.isEmpty())
         {
             cout << "No pending tickets.\n";
-            return;
+            return Ticket();
         }
+        
         Ticket t = serviceDesk.dequeue();
         cout << "=========================================\n";
         cout << "  Processing Ticket #" << t.ticketID << "\n";
@@ -48,6 +49,8 @@ public:
         cout << "  Urgency     : " << t.urgencyLevel << "\n";
         cout << "  Status      : RESOLVED\n";
         cout << "=========================================\n";
+        
+        return t;
     }
 
     void showDashboard() const override
@@ -83,4 +86,10 @@ public:
 
     double getWallet() const { return walletBalance; }
     int portfolioSize() const { return portfolio.size(); }
+    int serviceDeskSize() const { return serviceDesk.size(); }
+    ~Landlord()
+    {
+        for (int i = 0; i < portfolio.size(); i++)
+            delete portfolio.get(i);
+    }
 };

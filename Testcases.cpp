@@ -72,7 +72,6 @@ void TC04()
                l.portfolioSize() == 1);
 
     printResult("TC-04", "Add Residential Property — 5% tax", ok);
-    delete r;
 }
 
 // ============================================================
@@ -225,7 +224,7 @@ void TC11()
 
     t.raiseTicket(101, "Water pipe burst", 9);
 
-    bool ok = (l.serviceDesk.size() == 1);  // one ticket in landlord's queue
+    bool ok = (l.serviceDeskSize() == 1);  // one ticket in landlord's queue
 
     printResult("TC-11", "Raise Ticket — Routed to Landlord Queue", ok);
     delete r;
@@ -249,7 +248,7 @@ void TC12()
     t.raiseTicket(101, "Door hinge loose", 5);  // medium
 
     // dequeue should give urgency 9 first
-    Ticket top = l.serviceDesk.dequeue();
+    Ticket top = l.processTopTicket();
     bool ok = (top.urgencyLevel == 9);
 
     printResult("TC-12", "Ticket Priority — Highest Urgency First", ok);

@@ -4,8 +4,8 @@
 class ResidentialUnit : public Property
 {
 public:
-    ResidentialUnit(int id, string addr, double rent)
-        : Property(id, addr, rent) {}
+    ResidentialUnit(int id, string addr, double rent,char t='R')
+        : Property(id, addr, t, rent) {}
 
     double calculateTax() const override
     {
@@ -16,8 +16,8 @@ public:
 class CommercialUnit : public Property
 {
 public:
-    CommercialUnit(int id, string addr, double rent)
-        : Property(id, addr, rent) {}
+    CommercialUnit(int id, string addr, double rent,char t='C')
+        : Property(id, addr, t, rent) {}
 
     double calculateTax() const override
     {
